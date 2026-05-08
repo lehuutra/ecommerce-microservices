@@ -1,0 +1,3 @@
+rootProject.name = 'ecommerce-microservices'
+
+include 'services:auth-service'
