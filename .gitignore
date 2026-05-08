@@ -1,0 +1,20 @@
+# Environment files
+.env
+*.env.local
+
+# Java
+**/target/
+**/*.jar
+**/*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docker
+**/docker-compose.override.yml
