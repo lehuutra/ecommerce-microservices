@@ -18,3 +18,14 @@ Thumbs.db
 
 # Docker
 **/docker-compose.override.yml
+
+# Gradle cache
+**/.gradle/
+.gradle/
+
+# Build output
+**/build/
+build/
+
+# Postman (optional - bỏ dòng này nếu muốn commit postman files)
+.postman/
