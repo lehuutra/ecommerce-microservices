@@ -4,9 +4,11 @@ import com.ecommerce.auth.dto.AuthResponse;
 import com.ecommerce.auth.dto.LoginRequest;
 import com.ecommerce.auth.dto.RegisterRequest;
 import com.ecommerce.auth.entity.User;
+import com.ecommerce.auth.exception.BusinessException;
 import com.ecommerce.auth.repository.UserRepository;
 import com.ecommerce.auth.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,7 +25,7 @@ public class AuthService {
 
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already exists");
+            throw new BusinessException("Email already exists", HttpStatus.CONFLICT);
         }
 
         User user = User.builder()
@@ -47,12 +49,16 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(
+                            request.getEmail(),
+                            request.getPassword()
+                    )
+            );
+        } catch (Exception e) {
+            throw new BusinessException("Invalid email or password", HttpStatus.UNAUTHORIZED);
+        }
 
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found"));
