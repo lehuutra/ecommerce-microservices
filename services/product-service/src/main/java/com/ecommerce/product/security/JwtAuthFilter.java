@@ -1,4 +1,4 @@
-package com.ecommerce.auth.security;
+package com.ecommerce.product.security;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.FilterChain;
