@@ -2,4 +2,6 @@ rootProject.name = 'ecommerce-microservices'
 
 include 'services:auth-service'
 include 'services:product-service'
+include 'services:order-service'
+include 'services:notification-service'
 include 'gateway'
