@@ -50,11 +50,19 @@ public class ProductService {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(
                         "Product not found", HttpStatus.NOT_FOUND));
+
+        // Thêm: sản phẩm INACTIVE coi như không tồn tại với customer
+        if (product.getStatus() == Product.Status.INACTIVE) {
+            throw new BusinessException("Product not found", HttpStatus.NOT_FOUND);
+        }
+
         return toResponse(product);
     }
 
     public List<ProductResponse> search(String name) {
-        return productRepository.findByNameContainingIgnoreCase(name)
+        // Đổi sang method mới có filter status
+        return productRepository.findByNameContainingIgnoreCaseAndStatus(
+                        name, Product.Status.ACTIVE)
                 .stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

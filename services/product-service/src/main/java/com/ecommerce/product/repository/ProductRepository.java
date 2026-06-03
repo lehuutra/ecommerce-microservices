@@ -10,4 +10,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     List<Product> findByCategoryId(Long categoryId);
     List<Product> findByStatus(Product.Status status);
     List<Product> findByNameContainingIgnoreCase(String name);
+    List<Product> findByStatusOrderByCreatedAtDesc(Product.Status status);
+    List<Product> findByNameContainingIgnoreCaseAndStatus(String name, Product.Status status);
 }
