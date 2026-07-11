@@ -9,6 +9,9 @@ import com.ecommerce.product.exception.BusinessException;
 import com.ecommerce.product.repository.CategoryRepository;
 import com.ecommerce.product.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +25,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
+    @CacheEvict(value = {"products-all", "products-search"}, allEntries = true)
     public ProductResponse create(ProductRequest request) {
         Category category = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new BusinessException(
@@ -39,6 +43,7 @@ public class ProductService {
         return toResponse(product);
     }
 
+    @Cacheable(value = "products-all")
     public List<ProductResponse> getAll() {
         return productRepository.findByStatus(Product.Status.ACTIVE)
                 .stream()
@@ -46,6 +51,7 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Cacheable(value = "products-id", key = "#id")
     public ProductResponse getById(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(
@@ -59,6 +65,7 @@ public class ProductService {
         return toResponse(product);
     }
 
+    @Cacheable(value = "products-search", key = "#name")
     public List<ProductResponse> search(String name) {
         // Đổi sang method mới có filter status
         return productRepository.findByNameContainingIgnoreCaseAndStatus(
@@ -68,6 +75,11 @@ public class ProductService {
                 .collect(Collectors.toList());
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "products-all", allEntries = true),
+            @CacheEvict(value = "products-search", allEntries = true),
+            @CacheEvict(value = "products-id", key = "#id")
+    })
     public ProductResponse update(Long id, ProductRequest request) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(
@@ -87,6 +99,11 @@ public class ProductService {
         return toResponse(product);
     }
 
+    @Caching(evict = {
+            @CacheEvict(value = "products-all", allEntries = true),
+            @CacheEvict(value = "products-search", allEntries = true),
+            @CacheEvict(value = "products-id", key = "#id")
+    })
     public void delete(Long id) {
         Product product = productRepository.findById(id)
                 .orElseThrow(() -> new BusinessException(

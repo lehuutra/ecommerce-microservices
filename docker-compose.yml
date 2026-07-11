@@ -59,9 +59,13 @@ services:
       SPRING_DATASOURCE_PASSWORD: admin123
       JWT_SECRET: ecommerce-secret-key-must-be-at-least-256-bits-long-for-hs256
       JWT_EXPIRATION: 86400000
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_started
     networks:
       - ecommerce-network
 
