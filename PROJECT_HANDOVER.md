@@ -43,9 +43,12 @@ API Gateway
   |-- /api/products/**   -> product-service:8082
   |-- /api/categories/** -> product-service:8082
   |-- /api/orders/**     -> order-service:8083
+  |-- /api/payments/**   -> payment-service:8084
   `-- /api/cart/**       -> cart-service:8085
 
-Order Service -> Kafka order.created -> Notification Service
+Order Service -> order.created -> Notification Service
+              -> payment.process -> Payment Service
+Payment Service -> payment.completed/payment.failed -> Order Service
 ```
 
 Host ports:
@@ -55,7 +58,7 @@ Host ports:
 8081 Auth Service
 8082 Product Service
 8083 Order Service
-8084 Payment Service (chưa xây dựng)
+8084 Payment Service
 8085 Cart Service
 5432 PostgreSQL
 6379 Redis
@@ -87,14 +90,15 @@ Database per service:
 - `auth_db`
 - `product_db`
 - `order_db`
+- `payment_db`
 
-`infrastructure/postgres/init.sql` tạo đủ ba database. Các service không truy cập trực tiếp database của nhau.
+`infrastructure/postgres/init.sql` tạo đủ bốn database. Các service không truy cập trực tiếp database của nhau.
 
 Kafka:
 
 - External: `localhost:9092`
 - Docker internal: `kafka:29092`
-- Topic hiện tại: `order.created`
+- Topics: `order.created`, `payment.process`, `payment.completed`, `payment.failed`
 - Notification consumer dùng `ErrorHandlingDeserializer` và bỏ qua type header cũ không tương thích.
 
 ## 6. Product Service và Redis cache
@@ -166,6 +170,8 @@ Cart đã có unit tests, Docker build và end-to-end test qua Gateway.
 - API Gateway: routes, JWT verification, identity header injection, JSON errors.
 - Product/Category APIs và Redis cache.
 - Order Service và Kafka producer.
+- Payment Service, payment database và saga choreography qua Kafka.
+- Payment idempotency theo `order:{orderId}`; Order tự chuyển `CONFIRMED`/`CANCELLED`.
 - Notification Service và Kafka consumer.
 - Cart Service với Redis Hash storage.
 - Redis rate limiting tại Gateway.
@@ -185,13 +191,13 @@ chore(gateway): replace deprecated starter
 
 ## 10. Công việc tiếp theo
 
-### Phase 8 — Payment Service và Saga
+### Phase 8 — Payment Service và Saga (đã hoàn thành)
 
-- Tạo Payment Service tại port 8084 và `payment_db`.
-- Thiết kế events `payment.process`, `payment.completed`, `payment.failed`.
-- Saga choreography từ order created đến confirmed/cancelled.
-- Idempotency key để tránh double charge.
-- Update Order status từ `PENDING` sang `CONFIRMED` hoặc `CANCELLED`.
+- Payment Service chạy tại port 8084 với Flyway và `payment_db` riêng.
+- Order phát `payment.process` sau khi transaction tạo order commit.
+- Payment phát `payment.completed` hoặc `payment.failed`; Order cập nhật trạng thái idempotently.
+- Unique idempotency key ngăn double charge khi Kafka redeliver message.
+- Đã test unit, full regression và E2E cho success, forced failure, duplicate event.
 
 ### Các phase sau
 
@@ -203,6 +209,7 @@ chore(gateway): replace deprecated starter
 
 ### Technical debt
 
+- Cần Transactional Outbox để loại bỏ khoảng trống giữa database commit và Kafka publish.
 - Product Service vẫn còn security/JWT code cũ; cần thống nhất hoàn toàn chiến lược trust Gateway.
 - Rate limiting cần trusted proxy configuration trước khi sử dụng `X-Forwarded-For` khi deploy.
 - Notification mới log event, chưa gửi email thật.
@@ -231,6 +238,7 @@ docker compose exec -T redis redis-cli HGETALL 'cart:user@example.com'
 ./gradlew :gateway:test
 ./gradlew :services:product-service:test
 ./gradlew :services:cart-service:test
+./gradlew :services:order-service:test :services:payment-service:test
 ```
 
 Repository: `https://github.com/lehuutra/ecommerce-microservices`

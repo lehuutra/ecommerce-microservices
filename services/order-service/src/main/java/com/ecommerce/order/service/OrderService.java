@@ -4,12 +4,14 @@ import com.ecommerce.order.dto.*;
 import com.ecommerce.order.entity.Order;
 import com.ecommerce.order.entity.OrderItem;
 import com.ecommerce.order.event.OrderCreatedEvent;
+import com.ecommerce.order.event.OrderPlacedEvent;
+import com.ecommerce.order.event.PaymentProcessEvent;
 import com.ecommerce.order.exception.BusinessException;
 import com.ecommerce.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,7 +25,7 @@ import java.util.stream.Collectors;
 public class OrderService {
 
     private final OrderRepository orderRepository;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public OrderResponse createOrder(String userEmail, OrderRequest request) {
@@ -52,8 +54,7 @@ public class OrderService {
         order.setItems(orderItems);
         Order savedOrder = orderRepository.save(order);
 
-        // Phát event "order.created" lên Kafka
-        OrderCreatedEvent event = OrderCreatedEvent.builder()
+        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
                 .orderId(savedOrder.getId())
                 .userEmail(savedOrder.getUserEmail())
                 .totalAmount(savedOrder.getTotalAmount())
@@ -67,8 +68,18 @@ public class OrderService {
                         .collect(Collectors.toList()))
                 .build();
 
-        kafkaTemplate.send("order.created", String.valueOf(savedOrder.getId()), event);
-        log.info("Order created and event published: orderId={}", savedOrder.getId());
+        PaymentProcessEvent paymentProcessEvent = PaymentProcessEvent.builder()
+                .orderId(savedOrder.getId())
+                .userEmail(savedOrder.getUserEmail())
+                .amount(savedOrder.getTotalAmount())
+                .idempotencyKey("order:" + savedOrder.getId())
+                .build();
+
+        eventPublisher.publishEvent(new OrderPlacedEvent(
+                orderCreatedEvent,
+                paymentProcessEvent));
+        log.info("Order created and events scheduled after commit: orderId={}",
+                savedOrder.getId());
 
         return toResponse(savedOrder);
     }

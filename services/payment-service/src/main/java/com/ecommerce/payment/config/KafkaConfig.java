@@ -1,4 +1,4 @@
-package com.ecommerce.order.config;
+package com.ecommerce.payment.config;
 
 import org.apache.kafka.clients.admin.NewTopic;
 import org.springframework.context.annotation.Bean;
@@ -7,27 +7,18 @@ import org.springframework.kafka.config.TopicBuilder;
 
 @Configuration
 public class KafkaConfig {
-
     @Bean
-    public NewTopic orderCreatedTopic() {
-        return TopicBuilder.name("order.created")
-                .partitions(1)
-                .replicas(1)
-                .build();
-    }
-
-    @Bean
-    public NewTopic paymentProcessTopic() {
+    NewTopic paymentProcessTopic() {
         return TopicBuilder.name("payment.process").partitions(1).replicas(1).build();
     }
 
     @Bean
-    public NewTopic paymentCompletedTopic() {
+    NewTopic paymentCompletedTopic() {
         return TopicBuilder.name("payment.completed").partitions(1).replicas(1).build();
     }
 
     @Bean
-    public NewTopic paymentFailedTopic() {
+    NewTopic paymentFailedTopic() {
         return TopicBuilder.name("payment.failed").partitions(1).replicas(1).build();
     }
 }
