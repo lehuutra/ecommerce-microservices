@@ -6,6 +6,7 @@
 **/target/
 **/bin/
 **/*.jar
+!gradle/wrapper/gradle-wrapper.jar
 **/*.class
 
 # IDE
