@@ -1,0 +1,33 @@
+name: Backend CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v7
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v5
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+          cache: 'gradle'
+
+      - name: Grant execute permission for Gradle wrapper
+        run: chmod +x gradlew
+
+      - name: Start test infrastructure
+        run: docker compose up -d --wait postgres redis kafka
+
+      - name: Run all tests
+        run: ./gradlew test --no-daemon
+        env:
+          SPRING_FLYWAY_LOCATIONS: classpath:db/migration
