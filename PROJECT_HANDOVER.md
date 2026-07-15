@@ -178,6 +178,7 @@ Cart đã có unit tests, Docker build và end-to-end test qua Gateway.
 - Docker Compose cho các service hiện tại.
 - PostgreSQL schemas và Flyway migrations.
 - Backend CI bằng GitHub Actions: Java 21, test infrastructure và full Gradle tests.
+- Container Delivery thủ công: build và publish 7 application images lên GHCR.
 
 Các checkpoint gần nhất:
 
@@ -192,6 +193,9 @@ feat(payment): implement payment saga choreography
 ci: add backend test workflow
 fix(postgres): avoid duplicate auth database initialization
 fix(build): include Gradle wrapper jar
+ci: limit workflow triggers to main
+ci: add manual gateway container delivery
+ci: publish all application images
 ```
 
 ## 10. Công việc tiếp theo
@@ -206,18 +210,34 @@ fix(build): include Gradle wrapper jar
 
 ### Phase 9 — Backend CI (đã hoàn thành)
 
-- Workflow chạy khi `push` và `pull_request`.
+- Workflow chạy khi `push` vào `main` và `pull_request` hướng tới `main`.
 - GitHub runner dùng Ubuntu, Java 21 và Gradle dependency cache.
 - PostgreSQL, Redis và Kafka được khởi động bằng Docker Compose trước khi test.
 - Toàn bộ Gradle test suite phải pass trước khi workflow xanh.
 - CI đã phát hiện và giúp sửa lỗi fresh PostgreSQL initialization cùng Gradle Wrapper JAR bị ignore.
+- Branch ruleset yêu cầu PR, linear history và required check `test` trước khi merge.
+
+### Phase 10 — Container Delivery (đã hoàn thành nền tảng)
+
+- Workflow `Container Delivery` được kích hoạt thủ công từ branch `main`.
+- Docker Buildx matrix build Gateway và 6 microservice images.
+- Images được publish lên GHCR với tag `latest` và commit SHA.
+- Workflow dùng `GITHUB_TOKEN` với quyền tối thiểu `contents: read` và `packages: write`.
+- Đã xác minh pull thành công Gateway và Payment Service images từ GHCR.
+- Staging deployment được hoãn đến sau khi frontend có luồng nghiệp vụ tối thiểu.
+
+### Phase 11 — Next.js Frontend (tiếp theo)
+
+- Khởi tạo Next.js application.
+- Cấu hình backend API base URL theo environment.
+- Xây dựng luồng đăng nhập → sản phẩm → giỏ hàng → đặt hàng.
+- Thêm frontend CI sau khi có luồng tối thiểu.
 
 ### Các phase sau
 
-- CD: build/push Docker images và deploy staging.
+- Staging deployment từ GHCR images.
 - Environment configs và secret management.
 - AWS deployment.
-- Next.js frontend.
 - Observability: metrics, tracing và centralized logging.
 
 ### Technical debt
