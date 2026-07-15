@@ -1,6 +1,6 @@
 # E-Commerce Microservices — Project Handover
 
-> Cập nhật: 2026-07-12
+> Cập nhật: 2026-07-15
 
 ## 1. Mục tiêu và cách làm việc
 
@@ -177,6 +177,7 @@ Cart đã có unit tests, Docker build và end-to-end test qua Gateway.
 - Redis rate limiting tại Gateway.
 - Docker Compose cho các service hiện tại.
 - PostgreSQL schemas và Flyway migrations.
+- Backend CI bằng GitHub Actions: Java 21, test infrastructure và full Gradle tests.
 
 Các checkpoint gần nhất:
 
@@ -187,6 +188,10 @@ feat(cart): add Redis-backed cart service
 fix(gateway): harden authentication filter
 feat(gateway): add Redis rate limiting
 chore(gateway): replace deprecated starter
+feat(payment): implement payment saga choreography
+ci: add backend test workflow
+fix(postgres): avoid duplicate auth database initialization
+fix(build): include Gradle wrapper jar
 ```
 
 ## 10. Công việc tiếp theo
@@ -199,9 +204,17 @@ chore(gateway): replace deprecated starter
 - Unique idempotency key ngăn double charge khi Kafka redeliver message.
 - Đã test unit, full regression và E2E cho success, forced failure, duplicate event.
 
+### Phase 9 — Backend CI (đã hoàn thành)
+
+- Workflow chạy khi `push` và `pull_request`.
+- GitHub runner dùng Ubuntu, Java 21 và Gradle dependency cache.
+- PostgreSQL, Redis và Kafka được khởi động bằng Docker Compose trước khi test.
+- Toàn bộ Gradle test suite phải pass trước khi workflow xanh.
+- CI đã phát hiện và giúp sửa lỗi fresh PostgreSQL initialization cùng Gradle Wrapper JAR bị ignore.
+
 ### Các phase sau
 
-- CI/CD bằng GitHub Actions.
+- CD: build/push Docker images và deploy staging.
 - Environment configs và secret management.
 - AWS deployment.
 - Next.js frontend.
