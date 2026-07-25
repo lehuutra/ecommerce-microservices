@@ -1,64 +1,95 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+import { LogoutButton } from "@/components/auth/logout-button";
+import { getCurrentUser } from "@/lib/server/auth";
+
+export default async function Home() {
+  const user = await getCurrentUser();
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+    <div className="min-h-screen bg-slate-50 text-slate-950">
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <Link className="flex items-center gap-2 font-bold" href="/">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600 text-white">
+              E
+            </span>
+            E-Commerce
+          </Link>
+
+          {user ? (
+            <div className="flex items-center gap-4">
+              <div className="hidden text-right sm:block">
+                <p className="text-sm font-semibold text-slate-900">
+                  {user.fullName}
+                </p>
+                <p className="text-xs text-slate-500">{user.email}</p>
+              </div>
+              <LogoutButton />
+            </div>
+          ) : (
+            <Link
+              className="rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              href="/login"
             >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
+              Sign in
+            </Link>
+          )}
+        </div>
+      </header>
+
+      <main>
+        <section className="relative overflow-hidden bg-slate-950 px-6 py-24 text-white sm:py-32">
+          <div className="absolute inset-0" aria-hidden="true">
+            <div className="absolute left-1/4 top-0 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl" />
+            <div className="absolute bottom-0 right-1/4 h-72 w-72 rounded-full bg-cyan-400/10 blur-3xl" />
+          </div>
+          <div className="relative mx-auto max-w-4xl text-center">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-indigo-300">
+              Microservices storefront
+            </p>
+            <h1 className="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
+              Shopping built on a modern distributed backend.
+            </h1>
+            <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-slate-300">
+              Authentication is now connected end to end. Product discovery,
+              cart, and checkout experiences are the next frontend milestones.
+            </p>
+            <div className="mt-10 flex justify-center">
+              {user ? (
+                <p className="rounded-full border border-white/15 bg-white/10 px-5 py-3 text-sm text-slate-200">
+                  Signed in as <strong className="text-white">{user.fullName}</strong>
+                  <span className="ml-2 text-indigo-300">{user.role}</span>
+                </p>
+              ) : (
+                <Link
+                  className="rounded-full bg-white px-6 py-3 font-semibold text-slate-950 transition hover:bg-indigo-50"
+                  href="/login"
+                >
+                  Get started
+                </Link>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <section className="mx-auto grid max-w-6xl gap-6 px-6 py-16 md:grid-cols-3">
+          {[
+            ["Discover", "Browse products and categories from the catalog service."],
+            ["Build your cart", "Keep a fast, Redis-backed cart across your session."],
+            ["Checkout safely", "Place orders through the payment saga workflow."],
+          ].map(([title, description]) => (
+            <article
+              className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
+              key={title}
             >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+              <h2 className="text-lg font-bold">{title}</h2>
+              <p className="mt-3 text-sm leading-6 text-slate-600">
+                {description}
+              </p>
+            </article>
+          ))}
+        </section>
       </main>
     </div>
   );
