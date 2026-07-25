@@ -3,6 +3,7 @@ package com.ecommerce.auth.service;
 import com.ecommerce.auth.dto.AuthResponse;
 import com.ecommerce.auth.dto.LoginRequest;
 import com.ecommerce.auth.dto.RegisterRequest;
+import com.ecommerce.auth.dto.UserResponse;
 import com.ecommerce.auth.entity.User;
 import com.ecommerce.auth.exception.BusinessException;
 import com.ecommerce.auth.repository.UserRepository;
@@ -67,6 +68,17 @@ public class AuthService {
 
         return AuthResponse.builder()
                 .token(token)
+                .email(user.getEmail())
+                .fullName(user.getFullName())
+                .role(user.getRole().name())
+                .build();
+    }
+
+    public UserResponse getCurrentUser(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new BusinessException("User not found", HttpStatus.NOT_FOUND));
+
+        return UserResponse.builder()
                 .email(user.getEmail())
                 .fullName(user.getFullName())
                 .role(user.getRole().name())
