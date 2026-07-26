@@ -10,7 +10,7 @@ import {
 } from "@/lib/server/backend";
 import type { AuthUser } from "@/types/auth";
 
-function isAuthUser(value: unknown): value is AuthUser {
+const isAuthUser = (value: unknown): value is AuthUser => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -22,7 +22,7 @@ function isAuthUser(value: unknown): value is AuthUser {
     typeof user.fullName === "string" &&
     typeof user.role === "string"
   );
-}
+};
 
 export const getCurrentUser = cache(async (): Promise<AuthUser | null> => {
   const token = (await cookies()).get(AUTH_COOKIE_NAME)?.value;

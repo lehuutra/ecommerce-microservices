@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# E-Commerce Frontend
 
-## Getting Started
+Customer storefront for the e-commerce microservices project. It uses Next.js
+App Router, React, TypeScript, and Tailwind CSS.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- Account registration, login, session display, and logout.
+- Product catalog with search, category filters, and product details.
+- Redis-backed cart management.
+- Checkout and order creation.
+- Order history, order details, and payment status refresh.
+- Responsive loading, error, empty, and not-found states.
+
+## Architecture
+
+The browser only calls Next.js Route Handlers. Those handlers form a small BFF
+layer that forwards allowlisted requests to the API Gateway.
+
+```text
+Browser -> Next.js BFF -> API Gateway -> Microservices
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The JWT is stored in an `HttpOnly` cookie and is never exposed to browser
+JavaScript.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Local development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Start the backend stack from the repository root:
 
-## Learn More
+```powershell
+docker compose up -d --wait
+```
 
-To learn more about Next.js, take a look at the following resources:
+Create the local frontend environment file:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```powershell
+Copy-Item frontend/.env.example frontend/.env.local
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Install dependencies and start the frontend:
 
-## Deploy on Vercel
+```powershell
+Set-Location frontend
+npm ci
+npm run dev
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Open [http://localhost:3000](http://localhost:3000).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Environment variables
+
+| Variable | Purpose | Local default |
+|---|---|---|
+| `BACKEND_API_URL` | API Gateway URL used by server-side code | `http://localhost:8080` |
+| `FRONTEND_URL` | Public frontend origin used by metadata | `http://localhost:3000` |
+
+## Verification
+
+```powershell
+npm run lint
+npm run build
+```
+
+Frontend TypeScript and TSX use ES6+ syntax and arrow functions for components,
+route handlers, callbacks, and helpers.
