@@ -1,6 +1,6 @@
 # E-Commerce Microservices — Project Handover
 
-> Cập nhật: 2026-07-15
+> Cập nhật: 2026-07-26
 
 ## 1. Mục tiêu và cách làm việc
 
@@ -29,6 +29,8 @@ Môi trường chính: Windows 11, IntelliJ IDEA, Git Bash/PowerShell và Docker
 | Kafka / Zookeeper | Confluent 7.5.0 |
 | Flyway | 11.7.2 |
 | JWT | jjwt 0.12.3 |
+| Next.js / React | 16.2.10 / 19 |
+| Tailwind CSS | 4 |
 
 Gateway sử dụng WebFlux/Netty qua `spring-cloud-starter-gateway-server-webflux`; không thêm Spring MVC vào Gateway.
 
@@ -36,6 +38,9 @@ Gateway sử dụng WebFlux/Netty qua `spring-cloud-starter-gateway-server-webfl
 
 ```text
 Client
+  |
+  v :3000
+Next.js Frontend / BFF
   |
   v :8080
 API Gateway
@@ -64,6 +69,7 @@ Host ports:
 6379 Redis
 9092 Kafka external listener
 2181 Zookeeper
+3000 Next.js Frontend
 ```
 
 Notification Service là Kafka consumer và không expose host port. Thuộc tính nội bộ của service có thể dùng 8085 mà không xung đột vì mỗi container có network namespace riêng.
@@ -179,6 +185,9 @@ Cart đã có unit tests, Docker build và end-to-end test qua Gateway.
 - PostgreSQL schemas và Flyway migrations.
 - Backend CI bằng GitHub Actions: Java 21, test infrastructure và full Gradle tests.
 - Container Delivery thủ công: build và publish 7 application images lên GHCR.
+- Next.js storefront: authentication, catalog, cart, checkout, orders và payment status.
+- Frontend dùng BFF Route Handlers; JWT chỉ lưu trong cookie `HttpOnly`.
+- Frontend source thống nhất arrow functions và ES6+.
 
 Các checkpoint gần nhất:
 
@@ -196,6 +205,7 @@ fix(build): include Gradle wrapper jar
 ci: limit workflow triggers to main
 ci: add manual gateway container delivery
 ci: publish all application images
+feat(frontend): complete storefront customer journey
 ```
 
 ## 10. Công việc tiếp theo
@@ -226,15 +236,22 @@ ci: publish all application images
 - Đã xác minh pull thành công Gateway và Payment Service images từ GHCR.
 - Staging deployment được hoãn đến sau khi frontend có luồng nghiệp vụ tối thiểu.
 
-### Phase 11 — Next.js Frontend (tiếp theo)
+### Phase 11 — Next.js Frontend (đã hoàn thành)
 
-- Khởi tạo Next.js application.
-- Cấu hình backend API base URL theo environment.
-- Xây dựng luồng đăng nhập → sản phẩm → giỏ hàng → đặt hàng.
-- Thêm frontend CI sau khi có luồng tối thiểu.
+- App Router storefront với responsive shell, homepage, loading, error và not-found states.
+- Register/login/logout/session dùng BFF Route Handlers; JWT không được đưa vào browser JavaScript.
+- Catalog có danh sách, tìm kiếm, lọc category và product detail.
+- Cart có add, update quantity, remove, clear và tổng tiền.
+- Checkout tạo order, dọn cart và chuyển sang order detail.
+- Orders có lịch sử, chi tiết, trạng thái payment và polling khi saga còn xử lý.
+- UI/source dùng tiếng Anh; toàn bộ TypeScript/TSX dùng arrow functions và ES6+.
+- Đã pass ESLint, production build, backend regression và runtime E2E:
+  register → session → catalog → cart → checkout → confirmed order → completed payment → logout.
 
 ### Các phase sau
 
+- Frontend CI: lint và production build trên pull request.
+- Frontend container delivery và staging deployment.
 - Staging deployment từ GHCR images.
 - Environment configs và secret management.
 - AWS deployment.
@@ -247,6 +264,7 @@ ci: publish all application images
 - Rate limiting cần trusted proxy configuration trước khi sử dụng `X-Forwarded-For` khi deploy.
 - Notification mới log event, chưa gửi email thật.
 - Inventory chưa được tách khỏi Product Service.
+- Order Service đang nhận product name/price từ client; cần tự tra cứu catalog và chốt giá server-side trước production.
 - API versioning và OpenAPI chưa có.
 
 ## 11. Lệnh thường dùng
