@@ -5,7 +5,7 @@ import { type FormEvent, useState } from "react";
 
 import type { ApiErrorResponse, LoginRequest } from "@/types/auth";
 
-async function getErrorMessage(response: Response): Promise<string> {
+const getErrorMessage = async (response: Response): Promise<string> => {
   const contentType = response.headers.get("content-type");
 
   if (!contentType?.includes("application/json")) {
@@ -14,14 +14,14 @@ async function getErrorMessage(response: Response): Promise<string> {
 
   const error = (await response.json()) as Partial<ApiErrorResponse>;
   return error.message ?? "Sign-in failed. Please try again.";
-}
+};
 
-export function LoginForm() {
+export const LoginForm = ({ nextPath = "/" }: { nextPath?: string }) => {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
     setIsSubmitting(true);
@@ -44,14 +44,14 @@ export function LoginForm() {
         return;
       }
 
-      router.replace("/");
+      router.replace(nextPath);
       router.refresh();
     } catch {
       setError("Unable to reach the server. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
-  }
+  };
 
   return (
     <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
@@ -112,4 +112,4 @@ export function LoginForm() {
       </button>
     </form>
   );
-}
+};

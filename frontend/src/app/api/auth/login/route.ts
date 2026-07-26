@@ -17,11 +17,11 @@ import type {
 
 const MAX_REQUEST_BODY_BYTES = 8 * 1024;
 
-function errorResponse(
+const errorResponse = (
   status: number,
   message: string,
   errors?: Record<string, string>,
-) {
+) => {
   const body: ApiErrorResponse = {
     status,
     message,
@@ -30,9 +30,9 @@ function errorResponse(
   };
 
   return NextResponse.json(body, { status });
-}
+};
 
-function isLoginRequest(value: unknown): value is LoginRequest {
+const isLoginRequest = (value: unknown): value is LoginRequest => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -45,9 +45,9 @@ function isLoginRequest(value: unknown): value is LoginRequest {
     typeof request.password === "string" &&
     request.password.length > 0
   );
-}
+};
 
-function isAuthResponse(value: unknown): value is AuthResponse {
+const isAuthResponse = (value: unknown): value is AuthResponse => {
   if (typeof value !== "object" || value === null) {
     return false;
   }
@@ -61,9 +61,9 @@ function isAuthResponse(value: unknown): value is AuthResponse {
     typeof response.fullName === "string" &&
     typeof response.role === "string"
   );
-}
+};
 
-async function parseJsonResponse(response: Response): Promise<unknown> {
+const parseJsonResponse = async (response: Response): Promise<unknown> => {
   const contentType = response.headers.get("content-type");
 
   if (!contentType?.includes("application/json")) {
@@ -71,9 +71,9 @@ async function parseJsonResponse(response: Response): Promise<unknown> {
   }
 
   return response.json();
-}
+};
 
-export async function POST(request: Request) {
+export const POST = async (request: Request) => {
   const contentType = request.headers.get("content-type");
 
   if (!contentType?.includes("application/json")) {
@@ -160,4 +160,4 @@ export async function POST(request: Request) {
 
     return errorResponse(502, "Authentication service is unavailable");
   }
-}
+};

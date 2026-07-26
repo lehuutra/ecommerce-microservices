@@ -10,11 +10,26 @@ export const metadata: Metadata = {
   description: "Sign in to your E-Commerce account.",
 };
 
-export default async function LoginPage() {
+const getSafeNextPath = (value: string | string[] | undefined): string => {
+  const path = Array.isArray(value) ? value[0] : value;
+
+  if (!path || !path.startsWith("/") || path.startsWith("//")) {
+    return "/";
+  }
+
+  return path;
+};
+
+const LoginPage = async ({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) => {
   const user = await getCurrentUser();
+  const nextPath = getSafeNextPath((await searchParams).next);
 
   if (user) {
-    redirect("/");
+    redirect(nextPath);
   }
 
   return (
@@ -45,12 +60,20 @@ export default async function LoginPage() {
           </p>
         </div>
 
-        <LoginForm />
+        <LoginForm nextPath={nextPath} />
 
         <p className="mt-6 text-center text-sm text-slate-500">
-          New to E-Commerce? Account registration is coming next.
+          New to E-Commerce?{" "}
+          <Link
+            className="font-semibold text-indigo-600 hover:text-indigo-700"
+            href={`/register?next=${encodeURIComponent(nextPath)}`}
+          >
+            Create an account
+          </Link>
         </p>
       </section>
     </main>
   );
-}
+};
+
+export default LoginPage;
